@@ -1,0 +1,83 @@
+﻿* Encoding: UTF-8.
+*part 1
+
+FREQUENCIES VARIABLES=degree
+/ORDER=ANALYSIS.
+
+GRAPH
+  /BAR(SIMPLE)=PCT BY degree.
+
+DESCRIPTIVES VARIABLES= degree
+/STATISTICS=MEAN STDDEV MIN MAX.
+
+FREQUENCIES VARIABLES=class
+/ORDER=ANALYSIS.
+
+GRAPH
+  /BAR(SIMPLE)=PCT BY class.
+
+CROSSTABS
+  /TABLES=class BY degree
+  /FORMAT=AVALUE TABLES
+  /STATISTICS=CHISQ 
+  /CELLS=COUNT EXPECTED COLUMN 
+  /COUNT ROUND CELL.
+
+*part 2
+
+FREQUENCIES VARIABLES=educ
+/ORDER=ANALYSIS.
+
+
+FREQUENCIES VARIABLES=agekdbrn
+/ORDER=ANALYSIS.
+
+
+DESCRIPTIVES VARIABLES=educ maeduc paeduc sibs agekdbrn
+  /STATISTICS=MEAN STDDEV MIN MAX.
+
+FREQUENCIES VARIABLES=race
+/ORDER=ANALYSIS.
+ 
+RECODE race (1=1) (2 thru 3=0) INTO white.
+VARIABLE LABELS  white 'riswhite'.
+EXECUTE.
+
+* Define Variable Properties.
+*white.
+FORMATS  white(F8.0).
+VALUE LABELS white
+  0 'Non-White'
+  1 'White'.
+EXECUTE.
+
+FREQUENCIES VARIABLES=white
+/ORDER=ANALYSIS.
+
+FREQUENCIES VARIABLES=family16
+/ORDER=ANALYSIS.
+
+RECODE family16 (0=0) (1 thru 5=1) (6 thru 8=0) INTO livewth16.
+VARIABLE LABELS  livewth16 'Who did r live with at 16?'.
+EXECUTE.
+
+* Define Variable Properties.
+*livewth16.
+FORMATS  livewth16(F8.0).
+VALUE LABELS livewth16
+  0 'Lives with Other'
+  1 'Lives with Parent(s)'.
+EXECUTE.
+
+FREQUENCIES VARIABLES=livewth16
+/ORDER=ANALYSIS.
+
+REGRESSION
+  /MISSING LISTWISE
+  /STATISTICS COEFF OUTS R ANOVA
+  /CRITERIA=PIN(.05) POUT(.10) TOLERANCE(.0001)
+  /NOORIGIN 
+  /DEPENDENT educ
+  /METHOD=ENTER paeduc maeduc agekdbrn livewth16 sibs white.
+
+
